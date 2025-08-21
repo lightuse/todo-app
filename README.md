@@ -1,34 +1,33 @@
 
-
-
-
-
- pnpm install
-
-
- pnpm add vite --save-dev
-
- 
-  pnpm run dev
-
-  python3 -m venv venv
-source venv/bin/activate
-
-## 🛠️ 開発環境セットアップ
-
-### Python仮想環境
+## 環境構築
 
 ```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
+# リポジトリの frontend ディレクトリに移動
+cd frontend
 
-# macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
+# 依存関係をインストール
+npm install
+# または pnpm を使う場合
+# pnpm install
 
-# 依存関係インストール
-pip install -r requirements.txt
+# 開発サーバを起動
+npm run dev
+
+# 本番ビルド
+npm run build
 ```
 
-uvicorn main:app --host 0.0.0.0 --port 8000
+Vite のデフォルトは http://localhost:5173 です。
+
+### バックエンド（簡易）
+
+バックエンドは `backend` フォルダにあります。簡易手順：
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
