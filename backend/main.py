@@ -13,6 +13,7 @@ app = FastAPI()
 origins = [
     "http://localhost:3000", # Reactアプリのアドレス
     "http://localhost:5173", # Vite dev server (frontend)
+    "https://todo-app-client-5tvd.onrender.com", # 本番環境のアドレス
 ]
 
 app.add_middleware(

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+import { 
+  API_BASE_URL
+} from './config/api';
 
 function App() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/todos')
+    fetch(`${API_BASE_URL}/api/todos`)
       .then(res => res.json())
       .then(setData);
   }, []);
