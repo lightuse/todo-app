@@ -1,0 +1,12 @@
+
+###
+GET http://localhost:8000/api/todos
+
+### 
+POST http://localhost:8000/api/todos
+Content-Type: application/json
+
+{
+  "title": "New Todo",
+  "completed": false
+}
