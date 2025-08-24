@@ -67,33 +67,7 @@ def main():
         shutil.copytree(build_dir, docs_dir)
         
         # Create a simple index.html that redirects to the main page
-        index_content = """<!DOCTYPE html>
-<html>
-<head>
-    <title>Python API Documentation</title>
-    <meta http-equiv="refresh" content="0; url=index.html">
-    <link rel="canonical" href="index.html">
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 40px; 
-            text-align: center; 
-        }
-        .loading { 
-            background: #f5f5f5; 
-            padding: 20px; 
-            border-radius: 5px; 
-        }
-    </style>
-</head>
-<body>
-    <div class="loading">
-        <h1>Python API Documentation</h1>
-        <p>Redirecting to API documentation...</p>
-        <p><a href="index.html">Click here if you are not redirected automatically</a></p>
-    </div>
-</body>
-</html>"""
+        index_content = REDIRECT_HTML_TEMPLATE
         
         # Write the redirect page
         with open(docs_dir / "redirect.html", "w") as f:
