@@ -30,19 +30,60 @@ app.add_middleware(
     allow_headers=["*"],         # 全てのHTTPヘッダーを許可
 )
 
-# データベース依存性注入用の関数
-# リクエストごとにデータベースセッションを作成し、レスポンス後にクローズする
 def get_db():
+    """
+    Database dependency injection function.
+    
+    Creates a database session for each request and ensures it's properly
+    closed after the request is completed. This is the recommended pattern
+    for FastAPI database dependencies.
+    
+    Yields:
+        Session: SQLAlchemy database session
+        
+    Example:
+        >>> @app.get("/items")
+        ... def get_items(db: Session = Depends(get_db)):
+        ...     return db.query(Item).all()
+    """
     db = database.SessionLocal()
     try:
         yield db  # セッションを返す
     finally:
         db.close()  # セッションをクローズ
 
-# Todo一覧を取得するAPIエンドポイント
-# パラメータ: skip=スキップ件数, limit=取得件数上限, tag=タグフィルタ
 @app.get("/api/todos", response_model=List[schemas.Todo])
 def read_todos(skip: int = 0, limit: int = 100, tag: str | None = None, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of Todo items with optional filtering and pagination.
+    
+    This endpoint returns Todo items from the database with support for:
+    - Pagination using skip and limit parameters
+    - Tag-based filtering using the tag parameter
+    - Automatic response model validation
+    
+    Args:
+        skip (int, optional): Number of records to skip. Defaults to 0.
+        limit (int, optional): Maximum number of records to return. Defaults to 100.
+        tag (str, optional): Filter todos by tag. Returns todos containing this tag.
+        db (Session): Database session dependency.
+        
+    Returns:
+        List[schemas.Todo]: List of Todo items matching the criteria
+        
+    Example:
+        GET /api/todos?skip=0&limit=10&tag=work
+        
+        Response:
+        [
+            {
+                "id": 1,
+                "title": "Complete project documentation",
+                "completed": false,
+                "tags": ["work", "documentation"]
+            }
+        ]
+    """
     # ベースクエリを作成
     q = db.query(models.Todo)
     
@@ -56,7 +97,6 @@ def read_todos(skip: int = 0, limit: int = 100, tag: str | None = None, db: Sess
     todos = q.offset(skip).limit(limit).all()
     return todos
 
-# 新しいTodoを作成するAPIエンドポイント
 @app.post("/api/todos", response_model=schemas.Todo, status_code=201)
 def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
     # リクエストデータからTodoモデルのインスタンスを作成

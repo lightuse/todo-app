@@ -1,0 +1,49 @@
+{
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "../docs/api/typescript",
+  "name": "Todo App Frontend API Documentation",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "excludeInternal": true,
+  "theme": "default",
+  "includeVersion": true,
+  "sort": ["kind", "instance-first", "alphabetical"],
+  "kindSortOrder": [
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember", 
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Constructor",
+    "Property",
+    "Variable",
+    "Function",
+    "Method",
+    "Parameter",
+    "TypeParameter",
+    "Accessor",
+    "GetSignature",
+    "SetSignature",
+    "Reference"
+  ],
+  "categorizeByGroup": false,
+  "navigationLinks": {
+    "Main Documentation": "../../../",
+    "GitHub Repository": "https://github.com/shin/todo-app"
+  },
+  "gitRevision": "main",
+  "sourceLinkTemplate": "https://github.com/shin/todo-app/blob/{gitRevision}/{path}#L{line}",
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "treatWarningsAsErrors": false,
+  "intentionallyNotExported": ["InternalType"]
+}

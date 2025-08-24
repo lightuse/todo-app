@@ -1,0 +1,12 @@
+
+###
+GET https://todo-app-0tej.onrender.com/api/todos
+
+### 
+POST https://todo-app-0tej.onrender.com/api/todos
+Content-Type: application/json
+
+{
+  "title": "New Todo",
+  "completed": false
+}
