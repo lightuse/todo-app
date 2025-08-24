@@ -69,14 +69,14 @@ backend/
 
 ### APIエンドポイント
 
-| Method | Endpoint | 機能 |
-|--------|----------|------|
-| GET | `/api/todos` | Todo一覧取得（ページネーション・タグフィルタ対応） |
-| POST | `/api/todos` | 新しいTodo作成 |
-| PUT | `/api/todos/{id}` | 指定Todo更新 |
-| DELETE | `/api/todos/{id}` | 指定Todo削除 |
-| DELETE | `/api/todos` | 全Todo削除 |
-| POST | `/api/demo` | デモデータ作成 |
+| Method | Endpoint | 機能 | ステータスコード |
+|--------|----------|------|------------------|
+| GET | `/api/todos` | Todo一覧取得（ページネーション・タグフィルタ対応） | 200 |
+| POST | `/api/todos` | 新しいTodo作成 | 201 |
+| PUT | `/api/todos/{id}` | 指定Todo更新 | 200 |
+| DELETE | `/api/todos/{id}` | 指定Todo削除 | 200 |
+| DELETE | `/api/todos` | 全Todo削除 | 200 |
+| POST | `/api/demo` | デモデータ作成 | 201 |
 
 ### データモデル
 
@@ -217,9 +217,9 @@ async def validation_exception_handler(request, exc):
 def test_create_todo():
     response = client.post("/api/todos", json={
         "title": "Test todo",
-        "completed": false
+        "completed": False
     })
-    assert response.status_code == 200
+    assert response.status_code == 201
 ```
 
 ### 🚨 課題6: パフォーマンスと拡張性
@@ -246,7 +246,6 @@ def test_create_todo():
 2. データベース設計見直し
 3. API仕様の改善
 
-### フェーズ3: 運用最適化（1-2週間）
 ## 技術選択の詳細分析と背景
 
 ### なぜこの技術スタックを採用したか
@@ -667,7 +666,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pip install -r requirements-dev.txt
+        pip install -r requirements.txt
     
     - name: Run tests
       run: |

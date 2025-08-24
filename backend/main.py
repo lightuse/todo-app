@@ -57,7 +57,7 @@ def read_todos(skip: int = 0, limit: int = 100, tag: str | None = None, db: Sess
     return todos
 
 # 新しいTodoを作成するAPIエンドポイント
-@app.post("/api/todos", response_model=schemas.Todo)
+@app.post("/api/todos", response_model=schemas.Todo, status_code=201)
 def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
     # リクエストデータからTodoモデルのインスタンスを作成
     db_todo = models.Todo(title=todo.title, completed=todo.completed)
@@ -127,7 +127,7 @@ def delete_all_todos(db: Session = Depends(get_db)):
 
 
 # デモデータを作成するAPIエンドポイント
-@app.post("/api/demo", response_model=List[schemas.Todo])
+@app.post("/api/demo", response_model=List[schemas.Todo], status_code=201)
 def create_demo_data(clear: bool = False, db: Session = Depends(get_db)):
     """デモ用のTodoデータを作成する。clearがTrueの場合は既存のTodoを全て削除してから作成する"""
     

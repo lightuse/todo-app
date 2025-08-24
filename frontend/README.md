@@ -213,7 +213,7 @@ try {
 現在は手動テストベースですが、以下のテスト戦略を検討：
 
 ```typescript
-// 単体テスト（Jest + Testing Library）
+// 単体テスト（Vitest + Testing Library）
 describe('useTodos', () => {
   it('should create todo optimistically', () => {
     // テストコード
@@ -356,7 +356,7 @@ const useOffline = () => {
 
 ### 短期改善（1-2ヶ月）
 1. **エラーハンドリング強化**: トースト通知システム
-2. **テスト基盤構築**: Jest + Testing Library セットアップ
+2. **テスト基盤構築**: Vitest + Testing Library セットアップ
 3. **PWA化**: Service Worker、マニフェストファイル
 4. **アニメーション強化**: Framer Motion 導入
 
@@ -572,7 +572,7 @@ const useOfflineSync = () => {
 
 **改善アプローチ**:
 ```typescript
-// Jest + Testing Library + Cypress のセットアップ
+// Vitest + Testing Library + Cypress のセットアップ
 // vitest.config.ts
 export default defineConfig({
   test: {
@@ -787,23 +787,56 @@ const useOptimizedSearch = (todos: Todo[]) => {
 **アプローチ**:
 ```typescript
 // マイクロフロントエンド アーキテクチャ検討
-// Module Federation による段階的分離
+// Vite環境でのマイクロフロントエンド実現方法
 
-// webpack.config.js (Module Federation)
-const ModuleFederationPlugin = require('@module-federation/webpack');
+// 1. vite-plugin-federation を使用した場合
+// vite.config.ts
+import federation from '@originjs/vite-plugin-federation';
 
-module.exports = {
+export default defineConfig({
   plugins: [
-    new ModuleFederationPlugin({
-      name: 'todo_shell',
+    react(),
+    federation({
+      name: 'todo-shell',
       filename: 'remoteEntry.js',
       remotes: {
-        todo_core: 'todo_core@http://localhost:3001/remoteEntry.js',
-        todo_analytics: 'todo_analytics@http://localhost:3002/remoteEntry.js'
-      }
+        todoCore: 'http://localhost:3001/assets/remoteEntry.js',
+        todoAnalytics: 'http://localhost:3002/assets/remoteEntry.js'
+      },
+      shared: ['react', 'react-dom']
     })
   ]
+});
+
+// 2. 動的インポートによるコンポーネント分離（Viteネイティブ）
+const TodoCore = lazy(() => import('http://localhost:3001/todo-core.js'));
+const Analytics = lazy(() => import('http://localhost:3002/analytics.js'));
+
+// 3. より実用的なアプローチ：独立デプロイ可能なアプリケーション
+// Shell App (Main Application)
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/todos/*" element={
+          <Suspense fallback={<TodosSkeleton />}>
+            <TodoCore />
+          </Suspense>
+        } />
+        <Route path="/analytics/*" element={
+          <Suspense fallback={<AnalyticsSkeleton />}>
+            <Analytics />
+          </Suspense>
+        } />
+      </Routes>
+    </Router>
+  );
 };
+
+// 段階的移行戦略
+// Phase 1: モノリスから機能別コンポーネント分離
+// Phase 2: 独立ビルド可能なサブアプリケーション化
+// Phase 3: 完全なマイクロフロントエンド化（異なるフレームワーク対応）
 ```
 
 #### 2. **エンタープライズ機能の追加**
