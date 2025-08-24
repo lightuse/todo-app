@@ -1,0 +1,439 @@
+name: Documentation Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+    paths: 
+      - 'docs/**'
+      - '*.md'
+      - 'docs/config/mkdocs.yml'
+      - 'frontend/README.md'
+      - 'frontend/TESTING.md'
+      - 'backend/README.md'
+      - 'scripts/validate-docs.sh'
+
+jobs:
+  validate-documentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install Python dependencies
+      run: |
+        # Upgrade pip to latest version
+        python3 -m pip install --upgrade pip setuptools wheel
+        
+        # Clear pip cache to avoid conflicts
+        python3 -m pip cache purge
+        
+        # Install documentation dependencies with explicit versions
+        echo "📦 Installing MkDocs core packages..."
+        python3 -m pip install mkdocs>=1.5.0
+        echo "📦 Installing MkDocs Material theme..."
+        python3 -m pip install mkdocs-material>=9.0.0
+        echo "📦 Installing mkdocstrings with Python support..."
+        python3 -m pip install "mkdocstrings[python]>=0.24.0"
+        
+        # Install additional documentation tools
+        if [ -f docs/config/requirements.txt ]; then
+          echo "📦 Installing additional documentation dependencies..."
+          python3 -m pip install -r docs/config/requirements.txt
+          echo "✅ Additional documentation dependencies installed"
+        fi
+        
+        # Install backend dependencies
+        if [ -f backend/requirements.txt ]; then
+          echo "📦 Installing backend dependencies..."
+          python3 -m pip install -r backend/requirements.txt
+          echo "✅ Backend dependencies installed"
+        else
+          echo "⚠️  backend/requirements.txt not found"
+          exit 1
+        fi
+        
+        # Verify critical packages are installed with detailed output
+        echo "🔍 Verifying critical packages..."
+        python3 -c "import mkdocs; print('✅ mkdocs available')" || (echo "❌ mkdocs installation failed" && exit 1)
+        python3 -c "import mkdocstrings; print('✅ mkdocstrings available')" || (echo "❌ mkdocstrings installation failed" && exit 1)
+        python3 -c "import mkdocstrings.plugin; print('✅ mkdocstrings plugin available')" || (echo "❌ mkdocstrings plugin not available" && exit 1)
+        
+        # List all installed mkdocs packages for debugging
+        echo "📋 Installed MkDocs packages:"
+        pip list | grep -i mkdoc || echo "No mkdocs packages found"
+        
+        # Run comprehensive debug script
+        echo "🔧 Running MkDocs debug script..."
+        python3 scripts/debug-mkdocs.py || echo "⚠️  Debug script failed but continuing..."
+        
+    - name: Install pnpm
+      run: npm install -g pnpm
+      
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        if [ -f package.json ]; then
+          pnpm install --no-frozen-lockfile
+        else
+          echo "⚠️  frontend/package.json not found"
+          exit 1
+        fi
+        cd ..
+        
+    - name: Run documentation validation
+      run: |
+        echo "🔄 Running comprehensive documentation validation..."
+        echo "📍 Current directory: $(pwd)"
+        echo "📁 Project structure:"
+        ls -la
+        
+        chmod +x scripts/validate-docs.sh
+        if ./scripts/validate-docs.sh; then
+          echo "✅ Documentation validation passed"
+        else
+          echo "❌ Documentation validation failed"
+          echo "🔍 Debugging information:"
+          echo "📁 docs/ directory contents:"
+          ls -la docs/ || echo "docs/ directory not found"
+          echo "📁 docs/development/ directory contents:"
+          ls -la docs/development/ || echo "docs/development/ directory not found"
+          exit 1
+        fi
+        
+    - name: Setup documentation directories
+      run: |
+        # Ensure API documentation directories exist
+        mkdir -p docs/api/typescript
+        mkdir -p docs/api/python
+        
+    - name: Generate API documentation
+      run: |
+        # Verify we're in the right directory
+        echo "📍 Current working directory: $(pwd)"
+        echo "📁 Directory contents:"
+        ls -la
+        
+        # TypeScript API documentation
+        echo "🔄 Generating TypeScript API documentation..."
+        cd frontend
+        if [ -f "package.json" ]; then
+          echo "📦 Found package.json, checking typedoc script..."
+          if pnpm run typedoc; then
+            echo "✅ TypeScript API docs generated successfully"
+          else
+            echo "❌ TypeScript API docs generation failed"
+            exit 1
+          fi
+        else
+          echo "❌ frontend/package.json not found"
+          exit 1
+        fi
+        cd ..
+        
+        # Verify TypeScript docs were created
+        if [ -d "docs/api/typescript" ]; then
+          echo "✅ TypeScript API docs directory exists"
+          ls -la docs/api/typescript/ | head -5
+        else
+          echo "❌ TypeScript API docs directory not created"
+          exit 1
+        fi
+        
+        # Python API documentation
+        echo "🔄 Generating Python API documentation..."
+        cd backend
+        if [ -f "build-sphinx.py" ]; then
+          echo "📜 Found build-sphinx.py, checking Python modules..."
+          python3 -c "import sys; print('Python version:', sys.version)"
+          
+          # Check if sphinx is installed
+          if python3 -c "import sphinx; print('Sphinx version:', sphinx.__version__)" 2>/dev/null; then
+            echo "✅ Sphinx is available"
+          else
+            echo "❌ Sphinx not available, installing..."
+            pip install sphinx sphinx-rtd-theme
+          fi
+          
+          # Check backend requirements
+          if [ -f "requirements.txt" ]; then
+            echo "📋 Installing backend requirements..."
+            pip install -r requirements.txt
+          fi
+          
+          # Check if required Python modules exist
+          if python3 -c "import main, models, schemas, database" 2>/dev/null; then
+            echo "✅ All Python modules are importable"
+          else
+            echo "⚠️  Some Python modules may not be importable, but continuing..."
+          fi
+          
+          if python3 build-sphinx.py; then
+            echo "✅ Python API docs generated successfully"
+          else
+            echo "❌ Python API docs generation failed"
+            echo "📋 Checking backend directory contents:"
+            ls -la
+            echo "📋 Checking if _build directory was created:"
+            ls -la _build/ 2>/dev/null || echo "_build directory not found"
+            exit 1
+          fi
+        else
+          echo "❌ backend/build-sphinx.py not found"
+          exit 1
+        fi
+        cd ..
+        
+        # Verify Python docs were created
+        if [ -d "docs/api/python" ]; then
+          echo "✅ Python API docs directory exists"
+          ls -la docs/api/python/ | head -5
+        else
+          echo "❌ Python API docs directory not created"
+          exit 1
+        fi
+        
+    - name: Validate complete MkDocs build
+      run: |
+        echo "🔄 Preparing for MkDocs build validation..."
+        echo "📍 Current directory: $(pwd)"
+        
+        # Verify Python packages are installed
+        echo "🔍 Verifying installed packages..."
+        python3 -c "import mkdocs; print(f'✅ mkdocs version: {mkdocs.__version__}')" || echo "❌ mkdocs not found"
+        python3 -c "import mkdocs_material; print('✅ mkdocs-material installed')" || echo "❌ mkdocs-material not found"
+        python3 -c "import mkdocstrings; print('✅ mkdocstrings installed')" || echo "❌ mkdocstrings not found"
+        
+        echo "📁 Checking documentation structure:"
+        
+        # Verify key documentation files exist
+        echo "🔍 Checking for documentation-validation.md:"
+        if [ -f "docs/development/documentation-validation.md" ]; then
+          echo "✅ docs/development/documentation-validation.md exists"
+        else
+          echo "❌ docs/development/documentation-validation.md missing"
+          echo "📁 Contents of docs/development/:"
+          ls -la docs/development/ || echo "docs/development/ directory not found"
+          exit 1
+        fi
+        
+        # Check mkdocs.yml
+        echo "🔍 Checking mkdocs.yml configuration:"
+        if [ -f "docs/config/mkdocs.yml" ]; then
+          echo "✅ mkdocs.yml exists"
+          echo "🔍 Verifying mkdocs can parse the config:"
+          cd docs/config
+          
+          # Test config loading with detailed error output
+          echo "📋 Testing MkDocs config parsing..."
+          python3 -c "
+import mkdocs.config
+import sys
+try:
+    config = mkdocs.config.load_config()
+    print('✅ Config parsed successfully')
+    print(f'Site name: {config[\"site_name\"]}')
+    print(f'Plugins: {list(config[\"plugins\"].keys())}')
+except Exception as e:
+    print(f'❌ Config parsing failed: {e}')
+    sys.exit(1)
+" || (echo "❌ Config validation failed" && exit 1)
+        else
+          echo "❌ mkdocs.yml not found"
+          exit 1
+        fi
+        
+        echo "🔄 Building MkDocs documentation with strict validation..."
+        echo "📍 Current directory: $(pwd)"
+        echo "📁 Contents of docs directory (relative to mkdocs.yml):"
+        ls -la ../
+        
+        if mkdocs build --strict --verbose; then
+          echo "✅ MkDocs build successful"
+        else
+          echo "❌ MkDocs build failed"
+          echo "🔍 Attempting non-strict build for debugging:"
+          mkdocs build --verbose
+          exit 1
+        fi
+        cd ../..
+        
+    - name: Check documentation freshness
+      run: |
+        echo "Checking for outdated documentation..."
+        # APIドキュメントの更新日チェック
+        if [ -f "docs/api/typescript/index.html" ]; then
+          ts_age=$(find docs/api/typescript -name "index.html" -mtime +30 2>/dev/null | wc -l)
+          if [ "$ts_age" -gt 0 ]; then
+            echo "⚠️ TypeScript API docs are older than 30 days"
+          else
+            echo "✅ TypeScript API docs are up to date"
+          fi
+        else
+          echo "⚠️ TypeScript API docs not found"
+        fi
+        
+        if [ -f "docs/api/python/index.html" ]; then
+          py_age=$(find docs/api/python -name "index.html" -mtime +30 2>/dev/null | wc -l)
+          if [ "$py_age" -gt 0 ]; then
+            echo "⚠️ Python API docs are older than 30 days"
+          else
+            echo "✅ Python API docs are up to date"
+          fi
+        else
+          echo "⚠️ Python API docs not found"
+        fi
+        
+    - name: Upload documentation artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-docs
+        path: |
+          site/
+          docs/api/
+        retention-days: 30
+        
+    # Only deploy to GitHub Pages on main branch
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        cd docs/config
+        mkdocs gh-deploy --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+  link-checker:
+    runs-on: ubuntu-latest
+    needs: validate-documentation
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        pip install mkdocs mkdocs-material
+        pip install requests beautifulsoup4
+        
+    - name: Build documentation
+      run: |
+        cd docs/config
+        mkdocs build
+      
+    - name: Check external links
+      run: |
+        python3 - << 'EOF'
+        import requests
+        import re
+        import os
+        from urllib.parse import urljoin, urlparse
+        from bs4 import BeautifulSoup
+        
+        def check_external_links():
+            print("🔗 Checking external links...")
+            site_dir = "site"
+            broken_links = []
+            
+            # HTMLファイルを検索
+            for root, dirs, files in os.walk(site_dir):
+                for file in files:
+                    if file.endswith('.html'):
+                        file_path = os.path.join(root, file)
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            soup = BeautifulSoup(content, 'html.parser')
+                            
+                            # 外部リンクを検索
+                            for link in soup.find_all('a', href=True):
+                                href = link['href']
+                                if href.startswith('http'):
+                                    try:
+                                        response = requests.head(href, timeout=10, allow_redirects=True)
+                                        if response.status_code >= 400:
+                                            broken_links.append((href, response.status_code, file_path))
+                                            print(f"❌ {href} - {response.status_code} in {file_path}")
+                                        else:
+                                            print(f"✅ {href}")
+                                    except Exception as e:
+                                        broken_links.append((href, str(e), file_path))
+                                        print(f"⚠️ {href} - {str(e)} in {file_path}")
+            
+            if broken_links:
+                print(f"\n❌ Found {len(broken_links)} broken external links")
+                return False
+            else:
+                print("\n✅ All external links are working")
+                return True
+        
+        # 外部リンクチェックの実行
+        success = check_external_links()
+        exit(0 if success else 1)
+        EOF
+        
+  documentation-metrics:
+    runs-on: ubuntu-latest
+    needs: validate-documentation
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Calculate documentation metrics
+      run: |
+        echo "📊 Documentation Metrics Report"
+        echo "==============================="
+        
+        # ファイル数
+        md_count=$(find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" | wc -l)
+        echo "📄 Total Markdown files: $md_count"
+        
+        # 文字数
+        total_words=$(find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -exec wc -w {} + | tail -1 | awk '{print $1}')
+        echo "📝 Total words: $total_words"
+        
+        # 行数
+        total_lines=$(find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -exec wc -l {} + | tail -1 | awk '{print $1}')
+        echo "📏 Total lines: $total_lines"
+        
+        # 最大・最小ファイルサイズ
+        echo "📦 File size distribution:"
+        find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -exec wc -w {} + | sort -n | head -5 | while read count file; do
+            echo "  📄 $file: $count words"
+        done
+        echo "  ..."
+        find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -exec wc -w {} + | sort -nr | head -3 | while read count file; do
+            echo "  📄 $file: $count words (largest)"
+        done
+        
+        # 更新頻度
+        echo "📅 Recently updated files (last 30 days):"
+        find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -mtime -30 -exec ls -la {} + | wc -l | xargs echo "  Updated files:"
+        
+        # コード例の数
+        code_blocks=$(find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -exec grep -c '```' {} + | awk '{sum += $1} END {print sum/2}')
+        echo "💻 Code blocks: $code_blocks"
+        
+        # リンク数
+        links=$(find . -name "*.md" -not -path "./node_modules/*" -not -path "./venv/*" -exec grep -o '\[.*\](.*)' {} + | wc -l)
+        echo "🔗 Total links: $links"
+        
+        echo ""
+        echo "✅ Documentation metrics calculated successfully"

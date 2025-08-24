@@ -2,30 +2,6 @@
 
 Welcome to the Todo App documentation! This comprehensive guide will help you understand, use, and contribute to our Todo application.
 
-## 🚀 Quick Start
-
-Get up and running with the Todo app in just a few minutes:
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/lightuse/todo-app.git
-   cd todo-app
-   ```
-
-2. **Start the backend**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   python main.py
-   ```
-
-3. **Start the frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
 ## 📋 Features
 
 - ✅ Create, read, update, and delete todos

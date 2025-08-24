@@ -6,7 +6,7 @@ Before installing the Todo app, ensure you have the following software installed
 
 - **Node.js** (version 18 or higher)
 - **Python** (version 3.10 or higher)
-- **npm** or **pnpm** package manager
+- **pnpm** package manager
 
 ## Backend Setup
 
@@ -18,7 +18,7 @@ Before installing the Todo app, ensure you have the following software installed
 2. Create a virtual environment (recommended):
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
    ```
 
 3. Install Python dependencies:
@@ -73,7 +73,7 @@ To verify your installation:
 2. In another terminal, start the frontend:
    ```bash
    cd frontend
-   npm run dev
+   pnpm run dev
    ```
 
 3. Open your browser and navigate to `http://localhost:5173`

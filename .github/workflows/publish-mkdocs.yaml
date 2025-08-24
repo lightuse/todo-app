@@ -58,7 +58,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r docs/config/requirements.txt
 
       - name: Install Node.js dependencies
         working-directory: ./frontend
@@ -151,7 +151,7 @@ jobs:
       - name: Build MKDocs site
         run: |
           echo "Building MKDocs site..."
-          mkdocs build --clean
+          mkdocs build --clean --config-file docs/config/mkdocs.yml
           echo "MKDocs site built successfully"
 
       - name: Upload artifact

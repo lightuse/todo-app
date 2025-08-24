@@ -20,14 +20,14 @@ This guide covers setting up the development environment for the Todo App.
    ```bash
    cd backend
    python -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
 3. **Frontend setup:**
    ```bash
    cd frontend
-   npm install
+   pnpm install
    ```
 
 ## Development Commands

@@ -2,6 +2,8 @@ site_name: Todo App Documentation
 site_description: Documentation for the Todo Application
 site_author: Todo App Team
 site_url: https://lightuse.github.io/todo-app
+docs_dir: ../
+site_dir: ../../site
 
 repo_name: lightuse/todo-app
 repo_url: https://github.com/lightuse/todo-app
@@ -25,10 +27,9 @@ nav:
     - Sphinx Quick Reference: development/sphinx-quick-ref.md
     - Contributing: development/contributing.md
     - Deployment: development/deployment.md
+    - Documentation Validation: development/documentation-validation.md
   - API Documentation:
     - Overview: api/index.md
-    - TypeScript API: api/typescript/
-    - Python API (Sphinx): api/python/
   - Accessibility: modal-accessibility.md
 
 theme:
@@ -65,7 +66,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [backend]
+          paths: [../../backend]
           options:
             docstring_style: google
             show_source: true

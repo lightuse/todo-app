@@ -1,3 +1,4 @@
+### REST Client (VSCode Extension)
 
 ### Get all todos
 GET http://localhost:8000/api/todos
