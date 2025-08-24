@@ -1,18 +1,37 @@
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import type { Todo } from '../types/todo';
 
+/**
+ * TodoItemコンポーネントのプロパティ型定義
+ * @interface Props
+ */
 type Props = {
+  /** 表示するTodoアイテム */
   todo: Todo;
+  /** 現在編集中のTodoアイテムのID（編集中でない場合はnull） */
   editingId: number | null;
+  /** 編集中のタイトル */
   editingTitle: string;
+  /** 編集中のタイトルを設定する関数 */
   setEditingTitle: (v: string) => void;
+  /** 編集を開始する関数 */
   startEdit: (t: Todo) => void;
+  /** 編集を完了する関数 */
   finishEdit: () => void;
+  /** Todoの完了状態を切り替える関数 */
   onToggle: (t: Todo) => void;
+  /** Todoを削除する関数 */
   onDelete: (id: number) => void;
+  /** タグがクリックされたときの処理関数（オプション） */
   onTagClick?: (tag: string) => void;
 };
 
+/**
+ * 個別のTodoアイテムを表示するコンポーネント
+ * @param props - TodoItemコンポーネントのプロパティ
+ * @returns JSX.Element
+ * @description Todoの表示、編集、完了状態の切り替え、削除機能を提供
+ */
 export default function TodoItem({ todo, editingId, editingTitle, setEditingTitle, startEdit, finishEdit, onToggle, onDelete, onTagClick }: Props) {
   const isEditing = editingId === todo.id;
   return (

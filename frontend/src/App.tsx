@@ -1,200 +1,134 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { API_BASE_URL } from './config/api';
 import NewTodo from './components/NewTodo';
 import Controls from './components/Controls';
 import RightPanel from './components/RightPanel';
-import { createDemoData } from './services/todoService';
 import TodoList from './components/TodoList';
+import ConfirmDialog from './components/ConfirmDialog';
+import { useTodos, useEdit, useDemo, useTodoForm, useFilters } from './hooks';
 import './styles/App.css';
-import type { Todo } from './types/todo';
 
+/**
+ * メインのTodoアプリケーションコンポーネント
+ * @returns JSX.Element
+ * @description Todoアプリケーションのメインコンポーネント。全体のレイアウトと状態管理を担当
+ */
 function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [newTitle, setNewTitle] = useState('');
-  const [newTags, setNewTags] = useState('');
+  // 状態管理 - サーバーサイドタグフィルタリング用
   const [tagQuery, setTagQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-  const [query, setQuery] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingTitle, setEditingTitle] = useState('');
+  
+  // カスタムフックを使用
+  const todoState = useTodos(tagQuery);
+  const filterState = useFilters(todoState.todos); // クライアントサイドフィルタリング
+  const editState = useEdit(todoState.todos, todoState.updateTodo);
+  const formState = useTodoForm();
+  const demoState = useDemo(
+    todoState.setLoading,
+    todoState.setError,
+    todoState.loadTodos
+  );
 
-  useEffect(() => {
-    loadTodos();
-  }, [tagQuery]);
-
-  async function loadTodos() {
-    setLoading(true);
-    setError(null);
-    try {
-  const url = tagQuery ? `${API_BASE_URL}/api/todos?tag=${encodeURIComponent(tagQuery)}` : `${API_BASE_URL}/api/todos`;
-  const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setTodos(data);
-    } catch (e: any) {
-      setError(e.message || 'Failed to load todos');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function createTodo() {
-    const title = newTitle.trim();
-    if (!title) return;
-  const tags = newTags.split(',').map((s: string) => s.trim()).filter(Boolean);
-  const optimistic: Todo = { id: Date.now(), title, completed: false, tags };
-    setTodos((prev: Todo[]) => [optimistic, ...prev]);
-    setNewTitle('');
-  setNewTags('');
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, completed: false, tags }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const saved = await res.json();
-      setTodos((prev: Todo[]) => prev.map((t: Todo) => (t.id === optimistic.id ? saved : t)));
-    } catch (e: any) {
-      setError(e.message || 'Failed to create todo');
-      setTodos((prev: Todo[]) => prev.filter((t: Todo) => t.id !== optimistic.id));
-    }
-  }
-
-  async function updateTodo(todo: Todo) {
-    const original = todos.find((t: Todo) => t.id === todo.id);
-    setTodos((prev: Todo[]) => prev.map((t: Todo) => (t.id === todo.id ? todo : t)));
-  try {
-      const res = await fetch(`${API_BASE_URL}/api/todos/${todo.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: todo.title, completed: todo.completed, tags: todo.tags ?? [] }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const saved = await res.json();
-      setTodos((prev: Todo[]) => prev.map((t: Todo) => (t.id === saved.id ? saved : t)));
-    } catch (e: any) {
-      setError(e.message || 'Failed to update todo');
-      if (original) setTodos((prev: Todo[]) => prev.map((t: Todo) => (t.id === original.id ? original : t)));
-    }
-  }
-
-  async function deleteTodo(id: number) {
-    const original = todos;
-    setTodos((prev: Todo[]) => prev.filter((t: Todo) => t.id !== id));
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/todos/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    } catch (e: any) {
-      setError(e.message || 'Failed to delete todo');
-      setTodos(original);
-    }
-  }
-
-  async function handleCreateDemo() {
-    setLoading(true);
-    setError(null);
-    try {
-      await createDemoData(true);
-      await loadTodos();
-    } catch (e: any) {
-      setError(e.message || 'Failed to create demo data');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function startEdit(t: Todo) {
-    setEditingId(t.id);
-    setEditingTitle(t.title);
-  }
-
-  async function finishEdit() {
-    if (editingId == null) return;
-    const title = editingTitle.trim();
-    if (!title) {
-      setEditingId(null);
-      setEditingTitle('');
-      return;
-    }
-  const existing = todos.find((t: Todo) => t.id === editingId)!;
-  await updateTodo({ id: editingId, title, completed: existing.completed, tags: existing.tags ?? [] });
-    setEditingId(null);
-    setEditingTitle('');
-  }
-
-  const filtered = todos
-    .filter((t: Todo) => {
-      if (filter === 'active') return !t.completed;
-      if (filter === 'completed') return t.completed;
-      return true;
-    })
-    .filter((t: Todo) => {
-      const q = query.trim().toLowerCase();
-      if (!q) return true;
-      return t.title.toLowerCase().includes(q);
-    });
-
-  const activeCount = todos.filter((t: Todo) => !t.completed).length;
+  /**
+   * 新しいTodoを作成するハンドラー関数
+   * @description フォームの内容から新しいTodoを作成し、フォームをリセット
+   */
+  const handleCreateTodo = async () => {
+    await todoState.createTodo(formState.newTitle, formState.getTagsArray());
+    formState.resetForm();
+  };
 
   return (
     <div className="app-root">
       <div className="layout-with-right">
         <div className="layout-main">
-      <header className="app-header">
-        <h1>TODO</h1>
-      </header>
+          <header className="app-header">
+            <h1>TODO</h1>
+          </header>
 
-      <div className="top-search">
-        <input
-          aria-label="検索"
-          placeholder="TODOタイトルを検索"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <input
-          aria-label="タグ検索"
-          placeholder="雑務, 仕事, プライベート"
-          value={tagQuery}
-          onChange={(e) => setTagQuery(e.target.value)}
-        />
-      </div>
+          {/* 1. 検索ボタン（最上部で固定） */}
+          <div className="top-search fixed-section">
+            <input
+              aria-label="検索"
+              placeholder="TODOタイトルを検索"
+              value={filterState.query}
+              onChange={(e) => filterState.setQuery(e.target.value)}
+            />
+            <input
+              aria-label="タグ検索"
+              placeholder="タグ：雑務, 仕事, プライベート"
+              value={tagQuery}
+              onChange={(e) => setTagQuery(e.target.value)}
+            />
+          </div>
 
-      <NewTodo value={newTitle} onChange={setNewTitle} tagValue={newTags} onTagChange={setNewTags} onCreate={createTodo} />
+          {/* 2. 追加ボタン（固定で表示） */}
+          <div className="add-todo-section fixed-section">
+            <NewTodo 
+              value={formState.newTitle} 
+              onChange={formState.setNewTitle} 
+              tagValue={formState.newTags} 
+              onTagChange={formState.setNewTags} 
+              onCreate={handleCreateTodo} 
+            />
+          </div>
+
+          {/* 3. フィルタ（固定で表示） */}
+          <div className="filter-section fixed-section">
+            <Controls 
+              filter={filterState.filter} 
+              setFilter={filterState.setFilter} 
+              activeCount={filterState.activeCount} 
+            />
+          </div>
 
         </div>
         <RightPanel>
-          <Controls filter={filter} setFilter={setFilter} activeCount={activeCount} />
           <div className="demo-actions">
-            <button className="btn" onClick={handleCreateDemo}>Create demo data (clear existing)</button>
+            <button className="btn primary" onClick={demoState.handleCreateDemo}>
+              📝 デモデータ作成
+            </button>
+            <button className="btn danger" onClick={demoState.handleClearAllTodos}>
+              🗑️ 全て削除
+            </button>
           </div>
         </RightPanel>
       </div>
 
-  <main className="todo-list">
+      {/* 4. TODOリスト */}
+      <main className="todo-list">
         {/* loading-indicator is always in the DOM to avoid layout shifts when toggling */}
-        <div className={`loading-indicator ${loading ? 'visible' : ''}`} aria-hidden={!loading}>
+        <div className={`loading-indicator ${todoState.loading ? 'visible' : ''}`} aria-hidden={!todoState.loading}>
           <div className="muted">Loading...</div>
         </div>
 
-        {error && <div className="error">Error: {error}</div>}
+        {todoState.error && <div className="error">Error: {todoState.error}</div>}
 
         <TodoList
-          todos={filtered}
-          editingId={editingId}
-          editingTitle={editingTitle}
-          setEditingTitle={setEditingTitle}
-          startEdit={startEdit}
-          finishEdit={finishEdit}
-          onToggle={t => updateTodo(t)}
-          onDelete={id => deleteTodo(id)}
+          todos={filterState.filteredTodos}
+          editingId={editState.editingId}
+          editingTitle={editState.editingTitle}
+          setEditingTitle={editState.setEditingTitle}
+          startEdit={editState.startEdit}
+          finishEdit={editState.finishEdit}
+          onToggle={todoState.updateTodo}
+          onDelete={todoState.deleteTodo}
           onTagClick={(tag: string) => setTagQuery(tag)}
         />
       </main>
 
-  <footer className="app-footer muted">API: {API_BASE_URL} • {todos.length} total</footer>
+      <footer className="app-footer muted">API: {API_BASE_URL} • {todoState.todos.length} total</footer>
+      
+      {/* 確認ダイアログ */}
+      <ConfirmDialog
+        isOpen={demoState.showDeleteConfirm}
+        onClose={demoState.hideDeleteConfirm}
+        onConfirm={demoState.confirmDeleteAllTodos}
+        title="全て削除の確認"
+        message="全てのTODOを削除しますか？この操作は取り消せません。"
+        confirmText="削除する"
+        cancelText="キャンセル"
+        variant="danger"
+      />
     </div>
   );
 }

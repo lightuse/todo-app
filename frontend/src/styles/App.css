@@ -1,24 +1,82 @@
 :root{--bg:#0f172a;--card:#0b1220;--muted:#9aa4b2;--accent:#7c5cff;--danger:#ff6b6b;--glass:rgba(255,255,255,0.04)}
 
 *{box-sizing:border-box}
+button:focus{outline:2px solid var(--accent);outline-offset:1px}
+button:focus:not(:focus-visible){outline:none}
 body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; margin:0;background:linear-gradient(180deg,#071028 0%,#081226 100%);color:#e6eef8}
-.app-root{max-width:1100px;margin:36px auto;padding:20px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+.app-root{
+  max-width:1100px;
+  margin:36px auto;
+  padding:20px;
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+  box-shadow:0 6px 30px rgba(2,6,23,0.6);
+  height:calc(100vh - 72px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
 
 /* layout when right panel is present */
-.layout-with-right{display:flex;gap:20px;align-items:flex-start}
-.layout-main{flex:1}
-.right-panel{width:260px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+.layout-with-right{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+  flex-shrink:0;
+}
+.layout-main{
+  flex:1;
+  min-height:0;
+}
+.right-panel{
+  width:260px;
+  padding:12px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.02);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.02);
+  flex-shrink:0;
+  position:sticky;
+  top:0;
+  align-self:flex-start;
+}
 .app-header h1{margin:0;font-size:20px}
 .muted{color:var(--muted);font-size:13px}
 .new-todo{display:flex;gap:8px;margin-top:14px}
 .new-input{flex:1;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
 .tag-input{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
-.btn{padding:8px 12px;border-radius:8px;border:0;background:transparent;color:inherit;cursor:pointer}
+.btn{padding:8px 12px;border-radius:8px;border:0;background:transparent;color:inherit;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;text-align:left}
 .btn.primary{background:linear-gradient(90deg,var(--accent),#5aa6ff);color:#021025}
 .btn.danger{background:linear-gradient(90deg,var(--danger),#ff8b8b);}
 .controls{display:flex;justify-content:space-between;align-items:center;margin:12px 0}
-.filters button{margin-right:6px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted);cursor:pointer}
+.filters button{margin-right:6px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted);cursor:pointer;min-height:36px;text-align:left}
 .filters button.active{background:rgba(124,92,255,0.12);color:var(--accent);border-color:rgba(124,92,255,0.18)}
+.todo-list{
+  flex:1;
+  overflow-y:auto;
+  min-height:0;
+  position:relative;
+  margin-top:16px;
+}
+
+/* カスタムスクロールバー */
+.todo-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.todo-list::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+  border-radius: 3px;
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+
+.todo-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.15);
+}
+
 .todo-list ul{list-style:none;padding:0;margin:0}
 .todo-item{display:flex;align-items:center;padding:10px;border-radius:10px;margin-bottom:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);transition:transform .12s ease,background .12s}
 
@@ -27,18 +85,169 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"
 .loading-indicator.visible{opacity:1;transform:translateY(0);pointer-events:auto}
 
 .todo-item:hover{transform:translateY(-3px)}
-.checkbox-wrap{display:flex;align-items:center;margin-right:12px}
-.checkbox-wrap input{width:18px;height:18px}
+.checkbox-wrap{display:flex;align-items:center;margin-right:12px;padding:4px}
+.checkbox-wrap input{width:18px;height:18px;min-width:18px;min-height:18px}
 .title{font-size:15px}
 .todo-item.completed .title{text-decoration:line-through;color:var(--muted)}
-.actions{margin-left:auto;display:flex;gap:8px}
-.btn.small{padding:6px 8px;font-size:13px}
+.actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn.small{padding:6px 8px;font-size:13px;text-align:left}
 .edit-input{padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
 .empty{padding:18px;text-align:center}
 .error{color:var(--danger);padding:8px;border-radius:8px;background:rgba(255,107,107,0.06);margin:8px 0}
-.app-footer{margin-top:14px;font-size:13px;text-align:right;color:var(--muted)}
-.top-search{margin-top:12px;display:flex;align-items:center}
+.app-footer{
+  margin-top:14px;
+  font-size:13px;
+  text-align:right;
+  color:var(--muted);
+  flex-shrink:0;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,0.04);
+}
+/* Fixed sections layout */
+.fixed-section{
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+
+.fixed-section:last-of-type{
+  margin-bottom:20px;
+}
+
+.add-todo-section .new-todo{
+  margin-top:0;
+}
+
+.filter-section .controls{
+  margin:0;
+}
+
+.top-search{margin-top:12px;display:flex;align-items:center;gap:8px}
 .top-search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
 .top-search input::placeholder{color:var(--muted)}
-.demo-actions{display:flex;justify-content:flex-end;margin-top:12px}
-@media(max-width:560px){.app-root{margin:18px;padding:14px}.actions{gap:6px}.new-input{padding:8px}.tag-input{padding:8px;border-radius:8px}.top-search input{padding:8px;border-radius:8px}}
+.demo-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.demo-actions .btn{
+  width:100%;
+  justify-content:center;
+  font-size:13px;
+  font-weight:500;
+}
+@media(max-width:768px){
+  /* Stack layout on mobile instead of side-by-side */
+  .layout-with-right{
+    flex-direction:column;
+    gap:16px;
+  }
+  
+  /* App root adjustments for mobile */
+  .app-root{
+    height:calc(100vh - 24px);
+    margin:12px;
+    padding:16px;
+  }
+  
+  /* Right panel full width on mobile */
+  .right-panel{
+    width:100%;
+    position:static;
+    /* Remove sticky positioning on mobile */
+  }
+  
+  /* Make search inputs stack vertically on small screens */
+  .top-search{
+    flex-direction:column;
+    gap:8px;
+  }
+  
+  /* Smaller app container margins */
+  .app-root{
+    margin:12px;
+    padding:16px;
+  }
+  
+  /* Adjust input sizes */
+  .new-input, .tag-input, .top-search input{
+    padding:8px 10px;
+    font-size:14px;
+  }
+  
+  /* Smaller buttons and actions */
+  .actions{
+    gap:4px;
+  }
+  
+  .btn.small{
+    padding:4px 6px;
+    font-size:12px;
+  }
+  
+  /* Todo item adjustments */
+  .todo-item{
+    padding:8px;
+  }
+  
+  .title{
+    font-size:14px;
+  }
+  
+  /* Header adjustments */
+  .app-header h1{
+    font-size:18px;
+  }
+  
+  /* Controls adjustments */
+  .controls{
+    flex-direction:column;
+    gap:8px;
+    align-items:stretch;
+  }
+  
+  .filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+  }
+  
+  .filters button{
+    margin-right:0;
+    flex:1;
+    text-align:center; /* Only center on mobile filters for better layout */
+  }
+
+  /* Demo actions on mobile */
+  .demo-actions{
+    margin-top:8px;
+  }
+
+  .demo-actions .btn{
+    font-size:12px;
+    padding:6px 8px;
+  }
+}
+
+@media(max-width:480px){
+  /* Extra small screens */
+  .app-root{
+    height:calc(100vh - 16px);
+    margin:8px;
+    padding:12px;
+  }
+  
+  .new-todo{
+    flex-direction:column;
+    gap:8px;
+  }
+  
+  .todo-item{
+    padding:6px;
+  }
+  
+  .checkbox-wrap{
+    margin-right:8px;
+  }
+  
+  .actions button{
+    padding:4px;
+    font-size:11px;
+  }
+}
