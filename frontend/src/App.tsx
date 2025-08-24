@@ -4,6 +4,7 @@ import NewTodo from './components/NewTodo';
 import Controls from './components/Controls';
 import RightPanel from './components/RightPanel';
 import TodoList from './components/TodoList';
+import ConfirmDialog from './components/ConfirmDialog';
 import { useTodos, useEdit, useDemo, useTodoForm } from './hooks';
 import './styles/App.css';
 
@@ -132,6 +133,18 @@ function App() {
       </main>
 
       <footer className="app-footer muted">API: {API_BASE_URL} • {todoState.todos.length} total</footer>
+      
+      {/* 確認ダイアログ */}
+      <ConfirmDialog
+        isOpen={demoState.showDeleteConfirm}
+        onClose={demoState.hideDeleteConfirm}
+        onConfirm={demoState.confirmDeleteAllTodos}
+        title="全て削除の確認"
+        message="全てのTODOを削除しますか？この操作は取り消せません。"
+        confirmText="削除する"
+        cancelText="キャンセル"
+        variant="danger"
+      />
     </div>
   );
 }
