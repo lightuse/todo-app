@@ -1,0 +1,17 @@
+# MKDocs and documentation dependencies
+mkdocs>=1.5.0
+mkdocs-material>=9.0.0
+mkdocstrings[python]>=0.24.0
+mkdocs-gen-files>=0.5.0
+mkdocs-literate-nav>=0.6.0
+mkdocs-section-index>=0.3.0
+
+# Python documentation tools
+sphinx>=7.0.0
+sphinx-rtd-theme>=1.3.0
+sphinxcontrib-napoleon>=0.7
+
+# Additional utilities
+jinja2>=3.1.0
+markdown>=3.4.0
+pydantic>=2.0.0

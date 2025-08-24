@@ -11,7 +11,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typedoc": "typedoc src --out ../docs/api/typescript --name \"Todo App Frontend API\" --readme none --excludePrivate --theme default"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -32,6 +33,7 @@
     "jsdom": "^26.1.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
+    "typedoc": "^0.25.13",
     "vite": "^7.1.3",
     "vitest": "^3.2.4"
   }

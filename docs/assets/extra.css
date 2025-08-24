@@ -1,0 +1,46 @@
+/* Extra CSS for MKDocs Material theme customization */
+
+:root {
+  --md-primary-fg-color: #2196f3;
+  --md-primary-fg-color--light: #42a5f5;
+  --md-primary-fg-color--dark: #1976d2;
+}
+
+/* Code block styling */
+.highlight {
+  border-radius: 6px;
+}
+
+/* API documentation styling */
+.api-endpoint {
+  background: var(--md-code-bg-color);
+  border-left: 4px solid var(--md-primary-fg-color);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.api-method {
+  font-weight: bold;
+  color: var(--md-primary-fg-color);
+  margin-right: 0.5rem;
+}
+
+/* Todo app specific styling */
+.todo-feature {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.todo-feature .emoji {
+  margin-right: 0.5rem;
+  font-size: 1.2em;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .api-endpoint {
+    padding: 0.75rem;
+  }
+}
