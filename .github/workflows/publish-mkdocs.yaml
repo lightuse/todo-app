@@ -107,47 +107,43 @@ jobs:
             else
               echo "Sphinx generation failed, creating placeholder..."
               mkdir -p docs/api/python
-              cat > docs/api/python/index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Python API Documentation</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .placeholder { background: #f5f5f5; padding: 20px; border-radius: 5px; }
-  </style>
-</head>
-<body>
-  <h1>Python API Documentation</h1>
-  <div class="placeholder">
-    <p>Python API documentation will be available here once the backend code is available.</p>
-    <p>This is a placeholder page generated during the build process.</p>
-  </div>
-</body>
-</html>
-EOF
+              echo '<!DOCTYPE html>' > docs/api/python/index.html
+              echo '<html>' >> docs/api/python/index.html
+              echo '<head>' >> docs/api/python/index.html
+              echo '  <title>Python API Documentation</title>' >> docs/api/python/index.html
+              echo '  <style>' >> docs/api/python/index.html
+              echo '    body { font-family: Arial, sans-serif; margin: 40px; }' >> docs/api/python/index.html
+              echo '    .placeholder { background: #f5f5f5; padding: 20px; border-radius: 5px; }' >> docs/api/python/index.html
+              echo '  </style>' >> docs/api/python/index.html
+              echo '</head>' >> docs/api/python/index.html
+              echo '<body>' >> docs/api/python/index.html
+              echo '  <h1>Python API Documentation</h1>' >> docs/api/python/index.html
+              echo '  <div class="placeholder">' >> docs/api/python/index.html
+              echo '    <p>Python API documentation will be available here once the backend code is available.</p>' >> docs/api/python/index.html
+              echo '    <p>This is a placeholder page generated during the build process.</p>' >> docs/api/python/index.html
+              echo '  </div>' >> docs/api/python/index.html
+              echo '</body>' >> docs/api/python/index.html
+              echo '</html>' >> docs/api/python/index.html
             fi
           else
             echo "Backend directory not found, creating placeholder..."
             mkdir -p docs/api/python
-            cat > docs/api/python/index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Python API Documentation</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .placeholder { background: #f5f5f5; padding: 20px; border-radius: 5px; }
-  </style>
-</head>
-<body>
-  <h1>Python API Documentation</h1>
-  <div class="placeholder">
-    <p>Backend directory not found. Python API documentation will be available once the backend is added.</p>
-  </div>
-</body>
-</html>
-EOF
+            echo '<!DOCTYPE html>' > docs/api/python/index.html
+            echo '<html>' >> docs/api/python/index.html
+            echo '<head>' >> docs/api/python/index.html
+            echo '  <title>Python API Documentation</title>' >> docs/api/python/index.html
+            echo '  <style>' >> docs/api/python/index.html
+            echo '    body { font-family: Arial, sans-serif; margin: 40px; }' >> docs/api/python/index.html
+            echo '    .placeholder { background: #f5f5f5; padding: 20px; border-radius: 5px; }' >> docs/api/python/index.html
+            echo '  </style>' >> docs/api/python/index.html
+            echo '</head>' >> docs/api/python/index.html
+            echo '<body>' >> docs/api/python/index.html
+            echo '  <h1>Python API Documentation</h1>' >> docs/api/python/index.html
+            echo '  <div class="placeholder">' >> docs/api/python/index.html
+            echo '    <p>Backend directory not found. Python API documentation will be available once the backend is added.</p>' >> docs/api/python/index.html
+            echo '  </div>' >> docs/api/python/index.html
+            echo '</body>' >> docs/api/python/index.html
+            echo '</html>' >> docs/api/python/index.html
           fi
           
           echo "Python documentation step completed"
