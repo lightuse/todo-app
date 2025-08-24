@@ -42,9 +42,9 @@ def get_db():
         Session: SQLAlchemy database session
         
     Example:
-        >>> @app.get("/items")
-        ... def get_items(db: Session = Depends(get_db)):
-        ...     return db.query(Item).all()
+        >>> @app.get("/api/todos")
+        ... def read_todos(db: Session = Depends(get_db)):
+        ...     return db.query(models.Todo).all()
     """
     db = database.SessionLocal()
     try:
