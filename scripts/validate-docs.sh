@@ -249,6 +249,7 @@ if [ -f "backend/requirements.txt" ]; then
             case "$package" in
                 "python-dotenv") import_name="dotenv" ;;
                 "pydantic-settings") import_name="pydantic_settings" ;;
+                "sphinx-rtd-theme") import_name="sphinx_rtd_theme" ;;
             esac
             
             if python3 -c "import $import_name" 2>/dev/null; then

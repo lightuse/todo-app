@@ -36,6 +36,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install mkdocs mkdocs-material mkdocstrings[python]
+        pip install sphinx sphinx-rtd-theme
         if [ -f backend/requirements.txt ]; then
           pip install -r backend/requirements.txt
         else
@@ -59,8 +60,23 @@ jobs:
         
     - name: Run documentation validation
       run: |
+        echo "🔄 Running comprehensive documentation validation..."
+        echo "📍 Current directory: $(pwd)"
+        echo "📁 Project structure:"
+        ls -la
+        
         chmod +x scripts/validate-docs.sh
-        ./scripts/validate-docs.sh
+        if ./scripts/validate-docs.sh; then
+          echo "✅ Documentation validation passed"
+        else
+          echo "❌ Documentation validation failed"
+          echo "🔍 Debugging information:"
+          echo "📁 docs/ directory contents:"
+          ls -la docs/ || echo "docs/ directory not found"
+          echo "📁 docs/development/ directory contents:"
+          ls -la docs/development/ || echo "docs/development/ directory not found"
+          exit 1
+        fi
         
     - name: Setup documentation directories
       run: |
@@ -70,44 +86,123 @@ jobs:
         
     - name: Generate API documentation
       run: |
+        # Verify we're in the right directory
+        echo "📍 Current working directory: $(pwd)"
+        echo "📁 Directory contents:"
+        ls -la
+        
         # TypeScript API documentation
         echo "🔄 Generating TypeScript API documentation..."
         cd frontend
-        if pnpm run typedoc; then
-          echo "✅ TypeScript API docs generated successfully"
+        if [ -f "package.json" ]; then
+          echo "📦 Found package.json, checking typedoc script..."
+          if pnpm run typedoc; then
+            echo "✅ TypeScript API docs generated successfully"
+          else
+            echo "❌ TypeScript API docs generation failed"
+            exit 1
+          fi
         else
-          echo "❌ TypeScript API docs generation failed"
+          echo "❌ frontend/package.json not found"
           exit 1
         fi
         cd ..
+        
+        # Verify TypeScript docs were created
+        if [ -d "docs/api/typescript" ]; then
+          echo "✅ TypeScript API docs directory exists"
+          ls -la docs/api/typescript/ | head -5
+        else
+          echo "❌ TypeScript API docs directory not created"
+          exit 1
+        fi
         
         # Python API documentation
         echo "🔄 Generating Python API documentation..."
         cd backend
-        if python build-sphinx.py; then
-          echo "✅ Python API docs generated successfully"
-          # Copy to docs directory if the copy fails, create the directory first
-          mkdir -p ../docs/api/python/
-          if cp -r _build/html/* ../docs/api/python/; then
-            echo "✅ Python API docs copied successfully"
+        if [ -f "build-sphinx.py" ]; then
+          echo "📜 Found build-sphinx.py, checking Python modules..."
+          python3 -c "import sys; print('Python version:', sys.version)"
+          
+          # Check if sphinx is installed
+          if python3 -c "import sphinx; print('Sphinx version:', sphinx.__version__)" 2>/dev/null; then
+            echo "✅ Sphinx is available"
           else
-            echo "❌ Failed to copy Python API docs"
+            echo "❌ Sphinx not available, installing..."
+            pip install sphinx sphinx-rtd-theme
+          fi
+          
+          # Check backend requirements
+          if [ -f "requirements.txt" ]; then
+            echo "📋 Installing backend requirements..."
+            pip install -r requirements.txt
+          fi
+          
+          # Check if required Python modules exist
+          if python3 -c "import main, models, schemas, database" 2>/dev/null; then
+            echo "✅ All Python modules are importable"
+          else
+            echo "⚠️  Some Python modules may not be importable, but continuing..."
+          fi
+          
+          if python3 build-sphinx.py; then
+            echo "✅ Python API docs generated successfully"
+          else
+            echo "❌ Python API docs generation failed"
+            echo "📋 Checking backend directory contents:"
+            ls -la
+            echo "📋 Checking if _build directory was created:"
+            ls -la _build/ 2>/dev/null || echo "_build directory not found"
             exit 1
           fi
         else
-          echo "❌ Python API docs generation failed"
+          echo "❌ backend/build-sphinx.py not found"
           exit 1
         fi
         cd ..
         
+        # Verify Python docs were created
+        if [ -d "docs/api/python" ]; then
+          echo "✅ Python API docs directory exists"
+          ls -la docs/api/python/ | head -5
+        else
+          echo "❌ Python API docs directory not created"
+          exit 1
+        fi
+        
     - name: Validate complete MkDocs build
       run: |
+        echo "🔄 Preparing for MkDocs build validation..."
+        echo "📍 Current directory: $(pwd)"
+        echo "📁 Checking documentation structure:"
+        
+        # Verify key documentation files exist
+        echo "🔍 Checking for documentation-validation.md:"
+        if [ -f "docs/development/documentation-validation.md" ]; then
+          echo "✅ docs/development/documentation-validation.md exists"
+        else
+          echo "❌ docs/development/documentation-validation.md missing"
+          echo "📁 Contents of docs/development/:"
+          ls -la docs/development/ || echo "docs/development/ directory not found"
+          exit 1
+        fi
+        
+        # Check mkdocs.yml
+        echo "🔍 Checking mkdocs.yml navigation configuration:"
+        grep -A 5 -B 5 "documentation-validation" docs/config/mkdocs.yml || echo "Pattern not found"
+        
         cd docs/config
         echo "🔄 Building MkDocs documentation with strict validation..."
+        echo "📍 Current directory: $(pwd)"
+        echo "📁 Contents of docs directory (relative to mkdocs.yml):"
+        ls -la ../
+        
         if mkdocs build --strict --verbose; then
           echo "✅ MkDocs build successful"
         else
           echo "❌ MkDocs build failed"
+          echo "🔍 Attempting non-strict build for debugging:"
+          mkdocs build --verbose
           exit 1
         fi
         cd ../..
