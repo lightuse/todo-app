@@ -12,6 +12,15 @@ export function useEdit(todos: Todo[], updateTodo: (todo: Todo) => Promise<void>
   const [editingTitle, setEditingTitle] = useState('');
 
   /**
+   * 編集状態をリセットする
+   * @description 編集モードを終了し、編集中のタイトルをクリアする
+   */
+  function resetEditState() {
+    setEditingId(null);
+    setEditingTitle('');
+  }
+
+  /**
    * 指定されたTodoの編集を開始する
    * @param todo - 編集を開始するTodoアイテム
    * @description 編集モードに入り、現在のタイトルを編集フィールドに設定
@@ -30,16 +39,14 @@ export function useEdit(todos: Todo[], updateTodo: (todo: Todo) => Promise<void>
     
     const title = editingTitle.trim();
     if (!title) {
-      setEditingId(null);
-      setEditingTitle('');
+      resetEditState();
       return;
     }
     
     const existing = todos.find((t: Todo) => t.id === editingId);
     if (!existing) {
       // 編集中にTodoが削除された場合は編集モードを終了
-      setEditingId(null);
-      setEditingTitle('');
+      resetEditState();
       return;
     }
     
@@ -50,8 +57,7 @@ export function useEdit(todos: Todo[], updateTodo: (todo: Todo) => Promise<void>
       tags: existing.tags ?? [] 
     });
     
-    setEditingId(null);
-    setEditingTitle('');
+    resetEditState();
   }
 
   /**
@@ -59,8 +65,7 @@ export function useEdit(todos: Todo[], updateTodo: (todo: Todo) => Promise<void>
    * @description 編集モードを終了し、変更を保存せずに元の状態に戻す
    */
   function cancelEdit() {
-    setEditingId(null);
-    setEditingTitle('');
+    resetEditState();
   }
 
   return {
