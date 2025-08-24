@@ -35,10 +35,10 @@
   "categorizeByGroup": false,
   "navigationLinks": {
     "Main Documentation": "../../../",
-    "GitHub Repository": "https://github.com/shin/todo-app"
+    "GitHub Repository": "https://github.com/lightuse/todo-app"
   },
   "gitRevision": "main",
-  "sourceLinkTemplate": "https://github.com/shin/todo-app/blob/{gitRevision}/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/lightuse/todo-app/blob/{gitRevision}/{path}#L{line}",
   "validation": {
     "notExported": false,
     "invalidLink": true,

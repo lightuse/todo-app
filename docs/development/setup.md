@@ -12,7 +12,7 @@ This guide covers setting up the development environment for the Todo App.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/shin/todo-app.git
+   git clone https://github.com/lightuse/todo-app.git
    cd todo-app
    ```
 

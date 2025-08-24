@@ -1,10 +1,10 @@
 site_name: Todo App Documentation
 site_description: Documentation for the Todo Application
 site_author: Todo App Team
-site_url: https://shin.github.io/todo-app
+site_url: https://lightuse.github.io/todo-app
 
-repo_name: shin/todo-app
-repo_url: https://github.com/shin/todo-app
+repo_name: lightuse/todo-app
+repo_url: https://github.com/lightuse/todo-app
 
 nav:
   - Home: index.md
@@ -104,6 +104,6 @@ extra_css:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/shin/todo-app
+      link: https://github.com/lightuse/todo-app
   version:
     provider: mike
