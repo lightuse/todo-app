@@ -34,8 +34,14 @@ jobs:
         
     - name: Install Python dependencies
       run: |
+        pip install --upgrade pip
         pip install mkdocs mkdocs-material mkdocstrings[python]
-        pip install -r backend/requirements.txt
+        if [ -f backend/requirements.txt ]; then
+          pip install -r backend/requirements.txt
+        else
+          echo "⚠️  backend/requirements.txt not found"
+          exit 1
+        fi
         
     - name: Install pnpm
       run: npm install -g pnpm
@@ -43,51 +49,93 @@ jobs:
     - name: Install Node.js dependencies
       run: |
         cd frontend
-        pnpm install --no-frozen-lockfile
+        if [ -f package.json ]; then
+          pnpm install --no-frozen-lockfile
+        else
+          echo "⚠️  frontend/package.json not found"
+          exit 1
+        fi
+        cd ..
         
     - name: Run documentation validation
       run: |
         chmod +x scripts/validate-docs.sh
         ./scripts/validate-docs.sh
         
+    - name: Setup documentation directories
+      run: |
+        # Ensure API documentation directories exist
+        mkdir -p docs/api/typescript
+        mkdir -p docs/api/python
+        
     - name: Generate API documentation
       run: |
         # TypeScript API documentation
+        echo "🔄 Generating TypeScript API documentation..."
         cd frontend
-        pnpm run typedoc
+        if pnpm run typedoc; then
+          echo "✅ TypeScript API docs generated successfully"
+        else
+          echo "❌ TypeScript API docs generation failed"
+          exit 1
+        fi
         cd ..
         
         # Python API documentation
+        echo "🔄 Generating Python API documentation..."
         cd backend
-        python build-sphinx.py
-        cp -r _build/html/* ../docs/api/python/
+        if python build-sphinx.py; then
+          echo "✅ Python API docs generated successfully"
+          # Copy to docs directory if the copy fails, create the directory first
+          mkdir -p ../docs/api/python/
+          if cp -r _build/html/* ../docs/api/python/; then
+            echo "✅ Python API docs copied successfully"
+          else
+            echo "❌ Failed to copy Python API docs"
+            exit 1
+          fi
+        else
+          echo "❌ Python API docs generation failed"
+          exit 1
+        fi
         cd ..
         
     - name: Validate complete MkDocs build
       run: |
         cd docs/config
-        mkdocs build --strict --verbose
+        echo "🔄 Building MkDocs documentation with strict validation..."
+        if mkdocs build --strict --verbose; then
+          echo "✅ MkDocs build successful"
+        else
+          echo "❌ MkDocs build failed"
+          exit 1
+        fi
+        cd ../..
         
     - name: Check documentation freshness
       run: |
         echo "Checking for outdated documentation..."
         # APIドキュメントの更新日チェック
         if [ -f "docs/api/typescript/index.html" ]; then
-          ts_age=$(find docs/api/typescript -name "index.html" -mtime +30 | wc -l)
+          ts_age=$(find docs/api/typescript -name "index.html" -mtime +30 2>/dev/null | wc -l)
           if [ "$ts_age" -gt 0 ]; then
             echo "⚠️ TypeScript API docs are older than 30 days"
           else
             echo "✅ TypeScript API docs are up to date"
           fi
+        else
+          echo "⚠️ TypeScript API docs not found"
         fi
         
         if [ -f "docs/api/python/index.html" ]; then
-          py_age=$(find docs/api/python -name "index.html" -mtime +30 | wc -l)
+          py_age=$(find docs/api/python -name "index.html" -mtime +30 2>/dev/null | wc -l)
           if [ "$py_age" -gt 0 ]; then
             echo "⚠️ Python API docs are older than 30 days"
           else
             echo "✅ Python API docs are up to date"
           fi
+        else
+          echo "⚠️ Python API docs not found"
         fi
         
     - name: Upload documentation artifacts

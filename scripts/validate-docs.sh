@@ -207,13 +207,17 @@ while IFS= read -r -d '' file; do
         warning "BOM detected in: $file"
         bom_files=$((bom_files + 1))
     fi
-done < <(find . -name "*.md" -print0 2>/dev/null)
+done < <(find . -name "*.md" -not -path "./backend/venv/*" -not -path "./*/node_modules/*" -not -path "./*/.git/*" -print0 2>/dev/null)
 
 [ "$bom_files" -eq 0 ] && check_result 0 "No BOM in markdown files" || check_result 1 "$bom_files files with BOM detected"
 
 # 改行文字の確認 (CRLF vs LF)
-crlf_files=$(find . -name "*.md" -exec file {} \; 2>/dev/null | grep -c "CRLF" || echo 0)
-[ "$crlf_files" -eq 0 ] && check_result 0 "No CRLF line endings in markdown files" || warning "$crlf_files files with CRLF line endings"
+crlf_count=$(find . -name "*.md" -not -path "./backend/venv/*" -not -path "./*/node_modules/*" -not -path "./*/.git/*" -exec file {} \; 2>/dev/null | grep "CRLF" | wc -l 2>/dev/null || echo 0)
+if [ "$crlf_count" -eq 0 ]; then
+    check_result 0 "No CRLF line endings in markdown files"
+else
+    warning "$crlf_count files with CRLF line endings"
+fi
 
 # Phase 6: 依存関係と環境確認
 echo -e "\n${BLUE}🛠️  Phase 6: Dependencies and Environment${NC}"
