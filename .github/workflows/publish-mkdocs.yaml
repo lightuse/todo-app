@@ -151,7 +151,7 @@ jobs:
       - name: Build MKDocs site
         run: |
           echo "Building MKDocs site..."
-          mkdocs build --clean
+          mkdocs build --clean --config-file docs/config/mkdocs.yml
           echo "MKDocs site built successfully"
 
       - name: Upload artifact

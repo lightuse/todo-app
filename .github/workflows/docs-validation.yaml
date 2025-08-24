@@ -43,7 +43,7 @@ jobs:
     - name: Install Node.js dependencies
       run: |
         cd frontend
-        pnpm install
+        pnpm install --no-frozen-lockfile
         
     - name: Run documentation validation
       run: |
