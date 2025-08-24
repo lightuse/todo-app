@@ -94,17 +94,15 @@ def get_db():
 ## CRUD 操作
 
 ### Create (作成)
-```python
 def create_todo(db: Session, todo: TodoCreate):
     db_todo = Todo(
-        title=todo.title,
-        tags=json.dumps(todo.tags) if todo.tags else None
+        title=todo.title
     )
+    db_todo.tags_list = todo.tags
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
     return db_todo
-```
 
 ### Read (読み取り)
 ```python
