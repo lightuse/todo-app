@@ -34,15 +34,34 @@ jobs:
         
     - name: Install Python dependencies
       run: |
-        pip install --upgrade pip
-        pip install mkdocs mkdocs-material mkdocstrings[python]
-        pip install sphinx sphinx-rtd-theme
+        # Upgrade pip to latest version
+        python3 -m pip install --upgrade pip setuptools wheel
+        
+        # Install documentation dependencies from dedicated requirements file
+        if [ -f docs/config/requirements.txt ]; then
+          echo "📦 Installing documentation dependencies..."
+          python3 -m pip install -r docs/config/requirements.txt
+          echo "✅ Documentation dependencies installed"
+        else
+          echo "⚠️  docs/config/requirements.txt not found, using fallback installation"
+          python3 -m pip install mkdocs mkdocs-material mkdocstrings[python]
+          python3 -m pip install sphinx sphinx-rtd-theme
+        fi
+        
+        # Install backend dependencies
         if [ -f backend/requirements.txt ]; then
-          pip install -r backend/requirements.txt
+          echo "📦 Installing backend dependencies..."
+          python3 -m pip install -r backend/requirements.txt
+          echo "✅ Backend dependencies installed"
         else
           echo "⚠️  backend/requirements.txt not found"
           exit 1
         fi
+        
+        # Verify critical packages are installed
+        echo "🔍 Verifying critical packages..."
+        python3 -c "import mkdocs; print('✅ mkdocs available')" || (echo "❌ mkdocs installation failed" && exit 1)
+        python3 -c "import mkdocstrings; print('✅ mkdocstrings available')" || (echo "❌ mkdocstrings installation failed" && exit 1)
         
     - name: Install pnpm
       run: npm install -g pnpm
@@ -174,6 +193,13 @@ jobs:
       run: |
         echo "🔄 Preparing for MkDocs build validation..."
         echo "📍 Current directory: $(pwd)"
+        
+        # Verify Python packages are installed
+        echo "🔍 Verifying installed packages..."
+        python3 -c "import mkdocs; print(f'✅ mkdocs version: {mkdocs.__version__}')" || echo "❌ mkdocs not found"
+        python3 -c "import mkdocs_material; print('✅ mkdocs-material installed')" || echo "❌ mkdocs-material not found"
+        python3 -c "import mkdocstrings; print('✅ mkdocstrings installed')" || echo "❌ mkdocstrings not found"
+        
         echo "📁 Checking documentation structure:"
         
         # Verify key documentation files exist
@@ -188,10 +214,17 @@ jobs:
         fi
         
         # Check mkdocs.yml
-        echo "🔍 Checking mkdocs.yml navigation configuration:"
-        grep -A 5 -B 5 "documentation-validation" docs/config/mkdocs.yml || echo "Pattern not found"
+        echo "🔍 Checking mkdocs.yml configuration:"
+        if [ -f "docs/config/mkdocs.yml" ]; then
+          echo "✅ mkdocs.yml exists"
+          echo "🔍 Verifying mkdocs can parse the config:"
+          cd docs/config
+          python3 -c "import mkdocs.config; mkdocs.config.load_config()" || echo "❌ Config parsing failed"
+        else
+          echo "❌ mkdocs.yml not found"
+          exit 1
+        fi
         
-        cd docs/config
         echo "🔄 Building MkDocs documentation with strict validation..."
         echo "📍 Current directory: $(pwd)"
         echo "📁 Contents of docs directory (relative to mkdocs.yml):"
