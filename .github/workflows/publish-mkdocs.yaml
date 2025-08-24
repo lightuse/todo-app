@@ -58,7 +58,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r docs/config/requirements.txt
 
       - name: Install Node.js dependencies
         working-directory: ./frontend
