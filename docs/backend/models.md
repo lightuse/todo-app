@@ -151,7 +151,7 @@ class TodoResponse(TodoBase):
             "example": {
                 "id": 1,
                 "title": "サンプルTodo",
-                "completed": false,
+                "completed": False,
                 "tags": ["sample", "demo"],
                 "created_at": "2024-01-01T00:00:00",
                 "updated_at": "2024-01-01T00:00:00"
@@ -297,3 +297,4 @@ SAMPLE_TODOS = [
 モデルとスキーマの詳細な実装については以下のファイルを参照してください：
 - `backend/models.py`: SQLAlchemy モデル定義
 - `backend/schemas.py`: Pydantic スキーマ定義
+
