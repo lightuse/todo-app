@@ -30,9 +30,9 @@ def check_markdown_file(filepath):
         if line.rstrip() != line.rstrip(' \t'):
             issues.append(f'Line {i}: Trailing whitespace')
             
-        # 長すぎる行のチェック (120文字以上)
-        if len(line.rstrip()) > 120:
-            issues.append(f'Line {i}: Line too long ({len(line.rstrip())} > 120 characters)')
+        # 長すぎる行のチェック
+        if len(line.rstrip()) > LINE_LENGTH_LIMIT:
+            issues.append(f'Line {i}: Line too long ({len(line.rstrip())} > {LINE_LENGTH_LIMIT} characters)')
             
         # 連続する空行のチェック
         if i > 1 and line.strip() == '' and lines[i-2].strip() == '':
