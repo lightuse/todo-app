@@ -18,7 +18,7 @@
     /* Project layout and module helpers */
     "baseUrl": ".",
     "paths": { "@/*": ["src/*"] },
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
