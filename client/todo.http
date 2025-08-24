@@ -18,3 +18,6 @@ Content-Type: application/json
 {
   "clear": true
 }
+
+### Delete all todos
+DELETE http://localhost:8000/api/todos
