@@ -104,6 +104,6 @@ extra_css:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: *repo_url
+      link: https://github.com/lightuse/todo-app
   version:
     provider: mike
