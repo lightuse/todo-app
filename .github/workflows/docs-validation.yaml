@@ -34,7 +34,7 @@ jobs:
         
     - name: Install Python dependencies
       run: |
-        pip install mkdocs mkdocs-material
+        pip install mkdocs mkdocs-material mkdocstrings[python]
         pip install -r backend/requirements.txt
         
     - name: Install pnpm

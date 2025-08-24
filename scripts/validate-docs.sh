@@ -240,7 +240,14 @@ if [ -f "backend/requirements.txt" ]; then
         # コメント行とバージョン指定を除去
         package=$(echo "$package" | sed 's/#.*//' | sed 's/[>=<].*//' | tr -d '[:space:]')
         if [ -n "$package" ]; then
-            if python3 -c "import $package" 2>/dev/null; then
+            # パッケージ名とimport名の対応表
+            import_name="$package"
+            case "$package" in
+                "python-dotenv") import_name="dotenv" ;;
+                "pydantic-settings") import_name="pydantic_settings" ;;
+            esac
+            
+            if python3 -c "import $import_name" 2>/dev/null; then
                 # 成功時は何もしない（出力が多くなりすぎるため）
                 true
             else
