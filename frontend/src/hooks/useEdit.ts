@@ -35,7 +35,14 @@ export function useEdit(todos: Todo[], updateTodo: (todo: Todo) => Promise<void>
       return;
     }
     
-    const existing = todos.find((t: Todo) => t.id === editingId)!;
+    const existing = todos.find((t: Todo) => t.id === editingId);
+    if (!existing) {
+      // 編集中にTodoが削除された場合は編集モードを終了
+      setEditingId(null);
+      setEditingTitle('');
+      return;
+    }
+    
     await updateTodo({ 
       id: editingId, 
       title, 

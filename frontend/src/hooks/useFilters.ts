@@ -9,7 +9,6 @@ import type { Todo } from '../types/todo';
 export function useFilters(todos: Todo[]) {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [query, setQuery] = useState('');
-  const [tagQuery, setTagQuery] = useState('');
 
   /**
    * フィルターとクエリに基づいてTodoをフィルタリングする
@@ -46,10 +45,6 @@ export function useFilters(todos: Todo[]) {
     query,
     /** 検索クエリを設定する関数 */
     setQuery,
-    /** タグ検索クエリ */
-    tagQuery,
-    /** タグ検索クエリを設定する関数 */
-    setTagQuery,
     /** フィルタリングされたTodoアイテムの配列 */
     filteredTodos,
     /** アクティブなTodoアイテムの数 */

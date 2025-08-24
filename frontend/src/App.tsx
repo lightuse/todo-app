@@ -5,7 +5,7 @@ import Controls from './components/Controls';
 import RightPanel from './components/RightPanel';
 import TodoList from './components/TodoList';
 import ConfirmDialog from './components/ConfirmDialog';
-import { useTodos, useEdit, useDemo, useTodoForm } from './hooks';
+import { useTodos, useEdit, useDemo, useTodoForm, useFilters } from './hooks';
 import './styles/App.css';
 
 /**
@@ -14,13 +14,12 @@ import './styles/App.css';
  * @description Todoアプリケーションのメインコンポーネント。全体のレイアウトと状態管理を担当
  */
 function App() {
-  // 状態管理を分離
-  const [query, setQuery] = useState('');
+  // 状態管理 - サーバーサイドタグフィルタリング用
   const [tagQuery, setTagQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   
   // カスタムフックを使用
   const todoState = useTodos(tagQuery);
+  const filterState = useFilters(todoState.todos); // クライアントサイドフィルタリング
   const editState = useEdit(todoState.todos, todoState.updateTodo);
   const formState = useTodoForm();
   const demoState = useDemo(
@@ -38,21 +37,6 @@ function App() {
     formState.resetForm();
   };
 
-  // フィルタリングロジック
-  const filteredTodos = todoState.todos
-    .filter((todo) => {
-      if (filter === 'active') return !todo.completed;
-      if (filter === 'completed') return todo.completed;
-      return true;
-    })
-    .filter((todo) => {
-      const q = query.trim().toLowerCase();
-      if (!q) return true;
-      return todo.title.toLowerCase().includes(q);
-    });
-
-  const activeCount = todoState.todos.filter((todo) => !todo.completed).length;
-
   return (
     <div className="app-root">
       <div className="layout-with-right">
@@ -66,8 +50,8 @@ function App() {
             <input
               aria-label="検索"
               placeholder="TODOタイトルを検索"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={filterState.query}
+              onChange={(e) => filterState.setQuery(e.target.value)}
             />
             <input
               aria-label="タグ検索"
@@ -91,9 +75,9 @@ function App() {
           {/* 3. フィルタ（固定で表示） */}
           <div className="filter-section fixed-section">
             <Controls 
-              filter={filter} 
-              setFilter={setFilter} 
-              activeCount={activeCount} 
+              filter={filterState.filter} 
+              setFilter={filterState.setFilter} 
+              activeCount={filterState.activeCount} 
             />
           </div>
 
@@ -120,7 +104,7 @@ function App() {
         {todoState.error && <div className="error">Error: {todoState.error}</div>}
 
         <TodoList
-          todos={filteredTodos}
+          todos={filterState.filteredTodos}
           editingId={editState.editingId}
           editingTitle={editState.editingTitle}
           setEditingTitle={editState.setEditingTitle}

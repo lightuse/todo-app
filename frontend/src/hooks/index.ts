@@ -7,3 +7,4 @@ export { useTodos } from './useTodos';
 export { useEdit } from './useEdit';
 export { useDemo } from './useDemo';
 export { useTodoForm } from './useTodoForm';
+export { useFilters } from './useFilters';
