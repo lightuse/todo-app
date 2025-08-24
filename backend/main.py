@@ -9,7 +9,7 @@ import models, schemas, database
 from config import settings
 
 # データベーステーブルを作成
-models.Base.metadata.create_all(bind=database.engine)
+database.create_tables()
 
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI(debug=settings.DEBUG)
