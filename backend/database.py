@@ -8,10 +8,10 @@ and provides the base class for all database models.
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from config import settings
 
-# SQLiteデータベースファイルのURL
-# 現在のディレクトリにtodo.dbファイルを作成
-SQLALCHEMY_DATABASE_URL = "sqlite:///./todo.db"
+# 環境変数からデータベースURLを取得
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 """str: Database URL for SQLite connection."""
 
 # データベースエンジンを作成
@@ -31,3 +31,18 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 全てのモデルクラスはこのBaseクラスを継承する
 Base = declarative_base()
 """DeclarativeMeta: Base class for all SQLAlchemy models."""
+
+
+def create_tables():
+    """
+    Create all database tables.
+    
+    This function creates all tables defined by SQLAlchemy models
+    that inherit from the Base class. It's safe to call multiple times
+    as it only creates tables that don't already exist.
+    
+    Example:
+        >>> from database import create_tables
+        >>> create_tables()
+    """
+    Base.metadata.create_all(bind=engine)

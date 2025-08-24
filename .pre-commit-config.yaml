@@ -1,0 +1,148 @@
+repos:
+  - repo: local
+    hooks:
+      # ドキュメント検証
+      - id: validate-docs
+        name: Validate Documentation
+        entry: ./scripts/validate-docs.sh
+        language: script
+        files: '(README\.md|docs/config/mkdocs\.yml|docs/.*\.md|frontend/(README|TESTING)\.md|backend/README\.md)$'
+        require_serial: true
+        pass_filenames: false
+        stages: [commit]
+        
+      # マークダウンファイルの基本チェック
+      - id: markdown-format
+        name: Check Markdown Format
+        entry: python3
+        language: system
+        args: [-c, "
+import sys
+import re
+
+def check_markdown_file(filepath):
+    issues = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        
+    for i, line in enumerate(lines, 1):
+        # 行末スペースのチェック
+        if line.rstrip() != line.rstrip(' \t'):
+            issues.append(f'Line {i}: Trailing whitespace')
+            
+        # 長すぎる行のチェック (120文字以上)
+        if len(line.rstrip()) > 120:
+            issues.append(f'Line {i}: Line too long ({len(line.rstrip())} > 120 characters)')
+            
+        # 連続する空行のチェック
+        if i > 1 and line.strip() == '' and lines[i-2].strip() == '':
+            issues.append(f'Line {i}: Multiple consecutive empty lines')
+    
+    return issues
+
+# コマンドライン引数からファイルパスを取得
+for filepath in sys.argv[1:]:
+    if filepath.endswith('.md'):
+        issues = check_markdown_file(filepath)
+        if issues:
+            print(f'Issues in {filepath}:')
+            for issue in issues[:5]:  # 最初の5つの問題のみ表示
+                print(f'  - {issue}')
+            if len(issues) > 5:
+                print(f'  ... and {len(issues) - 5} more issues')
+            sys.exit(1)
+        else:
+            print(f'✅ {filepath}: No format issues')
+
+print('✅ All markdown files passed format check')
+        "]
+        files: '\.md$'
+        
+      # MkDocsビルドテスト
+      - id: mkdocs-build
+        name: Test MkDocs Build
+        entry: bash
+        language: system
+        args: [-c, "cd docs/config && mkdocs build --strict"]
+        files: '(docs/config/mkdocs\.yml|docs/.*\.md)$'
+        require_serial: true
+        pass_filenames: false
+        stages: [commit]
+        
+      # リンク切れの基本チェック
+      - id: check-links
+        name: Check Internal Links
+        entry: python3
+        language: system
+        args: [-c, "
+import sys
+import os
+import re
+
+def check_links_in_file(filepath):
+    broken_links = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # マークダウンリンクを検索 [text](link)
+    links = re.findall(r'\[.*?\]\(([^)]+)\)', content)
+    
+    for link in links:
+        # 相対リンクのみチェック
+        if link.endswith('.md') and not link.startswith('http'):
+            # 相対パスを絶対パスに変換
+            if link.startswith('./'):
+                link = link[2:]
+            
+            # ファイルの存在確認
+            if not os.path.exists(link):
+                broken_links.append(link)
+    
+    return broken_links
+
+# すべての引数ファイルをチェック
+all_broken = []
+for filepath in sys.argv[1:]:
+    if filepath.endswith('.md'):
+        broken = check_links_in_file(filepath)
+        if broken:
+            print(f'❌ Broken links in {filepath}:')
+            for link in broken:
+                print(f'  - {link}')
+            all_broken.extend(broken)
+        else:
+            print(f'✅ {filepath}: All links valid')
+
+if all_broken:
+    print(f'\n❌ Found {len(all_broken)} broken links total')
+    sys.exit(1)
+else:
+    print('\n✅ All links are valid')
+        "]
+        files: '\.md$'
+        stages: [commit]
+
+# 追加のフック設定
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # 一般的なファイルチェック
+      - id: trailing-whitespace
+        files: '\.md$'
+      - id: end-of-file-fixer
+        files: '\.md$'
+      - id: check-yaml
+        files: 'docs/config/mkdocs\.yml$'
+      - id: check-json
+        files: '\.json$'
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        files: '\.md$'
+        
+  # マークダウン専用のlinter
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        args: [--config=.markdownlint.yml]
+        files: '\.md$'

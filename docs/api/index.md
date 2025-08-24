@@ -7,7 +7,9 @@ Welcome to the Todo App API Documentation! This section provides comprehensive d
 ### TypeScript API
 The frontend TypeScript API documentation is automatically generated using [TypeDoc](https://typedoc.org/) from the source code comments and type definitions.
 
-**[📱 TypeScript API Documentation](typescript/)**
+**TypeScript API Documentation** - TypeDoc生成のAPIドキュメント
+
+（注意: TypeScriptドキュメントは `docs/api/typescript/index.html` で直接アクセス可能）
 
 Coverage includes:
 - **Types & Interfaces**: Todo data structures and type definitions
@@ -19,7 +21,9 @@ Coverage includes:
 ### Python API  
 The backend Python API documentation is generated using [Sphinx](https://www.sphinx-doc.org/) from docstrings in the FastAPI application code.
 
-**[🐍 Python API Documentation (Sphinx)](python/)**
+**Python API Documentation (Sphinx)** - Sphinx生成のAPIドキュメント
+
+（注意: Pythonドキュメントは `docs/api/python/index.html` で直接アクセス可能）
 
 Coverage includes:
 - **Models**: SQLAlchemy database models with detailed attribute documentation

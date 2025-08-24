@@ -6,20 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware # CORSをインポート
 
 # 自作モジュールをインポート
 import models, schemas, database
+from config import settings
 
 # データベーステーブルを作成
 models.Base.metadata.create_all(bind=database.engine)
 
 # FastAPIアプリケーションのインスタンスを作成
-app = FastAPI()
+app = FastAPI(debug=settings.DEBUG)
 
 # CORSミドルウェアの設定
 # フロントエンドからのリクエストを許可するオリジン一覧
-origins = [
-    "http://localhost:3000", # Reactアプリのアドレス
-    "http://localhost:5173", # Vite dev server (frontend)
-    "https://todo-app-client-5tvd.onrender.com", # 本番環境のアドレス
-]
+origins = settings.ALLOWED_ORIGINS
 
 # CORSミドルウェアをアプリケーションに追加
 app.add_middleware(
@@ -201,3 +198,13 @@ def create_demo_data(clear: bool = False, db: Session = Depends(get_db)):
         db.refresh(t)
 
     return created  # 作成されたTodoリストを返す
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app", 
+        host=settings.HOST, 
+        port=settings.PORT, 
+        reload=settings.DEBUG
+    )
