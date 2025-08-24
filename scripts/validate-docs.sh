@@ -64,6 +64,7 @@ expected_files=(
     "docs/development/sphinx-quick-ref.md"
     "docs/development/contributing.md"
     "docs/development/deployment.md"
+    "docs/development/documentation-validation.md"
     "docs/api/index.md"
     "frontend/README.md"
     "frontend/TESTING.md"
